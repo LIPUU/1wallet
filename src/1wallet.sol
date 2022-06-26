@@ -7,9 +7,12 @@ contract Wallet {
     /// ERRORS ///
     error InvaildSignatures();
     error ExecutionFailed();
+    error SetNewQuorumFailed();
 
     /// EVENT ///
-    event Executed(address target, uint256 amount,bytes data);
+    event Executed(address , uint256 ,bytes );
+    event QuorumUpdated(uint256 );
+    event TrustedAddressUpdated(address,bool);
 
     string name;
     bytes32 internal immutable INITIAL_DOMAIN_SEPARATOR;
@@ -26,7 +29,7 @@ contract Wallet {
         keccak256("SetQuorum(uint256 newQuorum,uint256 nonce)");
     
     bytes32 public constant TRUSTED_ADDRESS_HASH=
-        keccak256("setTrustedAddress(address addr,uint256 nonce)");
+        keccak256("setTrustedAddress(address addr,bool tursted,uint256 nonce)");
 
     uint256 quorum;
     mapping(address=>bool) trusted;
@@ -133,12 +136,70 @@ contract Wallet {
         
     }
 
-    function setQuorum(Signature[] calldata signatures, uint256 quorum) external {
+    function setQuorum(Signature[] calldata signatures, uint256 newQuorum) external {
+        bytes32 digest = keccak256( // 这个是digest
+				abi.encodePacked(
+					'\x19\x01',
+					domainSeparator(),
+					keccak256(
+						abi.encode(
+							QUORUM_HASH,
+                            newQuorum,
+							nonce++
+						)
+					)
+				)
+			);
         
+        address previous;
+        unchecked {
+            for (uint256 i=0; i<quorum; ++i ) {
+                address signer=ecrecover(digest,signatures[i].v, signatures[i].r, signatures[i].s);
+
+                if (!trusted[signer] || previous >= signer)
+                    revert InvaildSignatures();
+                
+                previous = signer;
+            }
+        }
+
+        quorum = newQuorum;
+        emit QuorumUpdated(quorum);
     }
 
-    function setTrustedAddress(Signature[] calldata signatures,address addr) external {
+    function setTrustedAddress(Signature[] calldata signatures,address addr,bool trusted_or_not) external {
+        if (addr==address(0))
+            revert ExecutionFailed();
 
+        bytes32 digest = keccak256( // 这个是digest
+				abi.encodePacked(
+					'\x19\x01',
+					domainSeparator(),
+					keccak256(
+						abi.encode(
+							TRUSTED_ADDRESS_HASH,
+                            addr,
+                            trusted_or_not,
+							nonce++
+						)
+					)
+				)
+			);
+        
+        address previous;
+        unchecked {
+            for (uint256 i=0; i<quorum; ++i ) {
+                address signer=ecrecover(digest,signatures[i].v, signatures[i].r, signatures[i].s);
+
+                if (!trusted[signer] || previous >= signer)
+                    revert InvaildSignatures();
+                
+                previous = signer;
+            }
+        }
+
+        trusted[addr]=trusted_or_not;
+        emit TrustedAddressUpdated(addr,trusted_or_not);
     }
 
     function domainSeparator()  public view returns (bytes32) {

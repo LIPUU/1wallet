@@ -101,7 +101,8 @@ abstract contract OffChainSignHelper {
 
     function setTrustedAddressSign (
         uint256 signer,
-        address addr
+        address addr,
+        bool trusted_or_not
         ) public returns(Wallet.Signature memory){
             (uint8 v,bytes32 r, bytes32 s) = hevm.sign(
                 signer,
@@ -112,7 +113,8 @@ abstract contract OffChainSignHelper {
 					keccak256(
 						abi.encode(
 							wallet.TRUSTED_ADDRESS_HASH(),
-							signer,
+                            addr,
+                            trusted_or_not,
 							wallet.nonce()
 						)
 					)
