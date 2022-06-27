@@ -31,8 +31,8 @@ contract Wallet {
     bytes32 public constant TRUSTED_ADDRESS_HASH=
         keccak256("setTrustedAddress(address addr,bool tursted,uint256 nonce)");
 
-    uint256 quorum;
-    mapping(address=>bool) trusted;
+    uint256 public quorum;
+    mapping(address=>bool) public trusted;
 
     receive() external payable {}
 
@@ -219,13 +219,10 @@ contract Wallet {
                 )
             );
     }
-    
 
     struct Signature {
         uint8 v;
         bytes32 r;
         bytes32 s;
     }
-
-
 }
