@@ -123,6 +123,4 @@ abstract contract OffChainSignHelper {
         );
         return Wallet.Signature(v,r,s);
     }
-
-    
 }

@@ -29,30 +29,4 @@ contract setNewQuorum is Test,OffChainSignHelper {
         wallet.setQuorum(signatures,2);
         
     }
-
-    // function test_Cannot_set_SmallerThan_0Quorum() public {
-    //     wallet = new Wallet("w",signers,signers.length);
-        
-    //     Wallet.Signature[] memory signatures=new Wallet.Signature[](signers.length);
-
-    //     for(uint256 i=0;i<signatures.length;++i){
-    //         signatures[i] = setQuorumSign(privateKeys[i],0);
-    //     }
-
-    //     vm.expectRevert(abi.encodeWithSignature("SetNewQuorumFailed()"));
-    //     wallet.setQuorum(signatures,0);
-    // }
-
-    // function test_Cannot_set_QuorumMoreThanSigners() public {
-    //     wallet = new Wallet("w",signers,signers.length);
-        
-    //     Wallet.Signature[] memory signatures=new Wallet.Signature[](signers.length);
-
-    //     for(uint256 i=0;i<signatures.length;++i){
-    //         signatures[i] = setQuorumSign(privateKeys[i],signers.length+1);
-    //     }
-
-    //     vm.expectRevert(abi.encodeWithSignature("SetNewQuorumFailed()"));
-    //     wallet.setQuorum(signatures,signers.length+1);
-    // }
 }
