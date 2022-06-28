@@ -23,13 +23,14 @@ contract ExecutionERC20Test is Test,OffChainSignHelper {
         
     }
 
+/// @dev 检查可以提款0个token
     function testExecuteERC20_With_0Token() public {
         wallet = new Wallet("w",signers,signers.length);
 
         Wallet.Signature[] memory signatures=new Wallet.Signature[](signers.length);
 
         for(uint256 i=0;i<signatures.length;++i){
-            signatures[i] = executionEtherERC20Sign(privateKeys[i],address(myToken),targetAddress,0);
+            signatures[i] = executionERC20Sign(privateKeys[i],address(myToken),targetAddress,0);
         }
 
     /// @dev 检查from，to，这两个是indexed的; 不检查amount，因为它不是indexed，但它被附加在了data字段，因此仍然可以做相应的检查
@@ -43,6 +44,7 @@ contract ExecutionERC20Test is Test,OffChainSignHelper {
         assertEq(wallet.nonce(),2);
     }
 
+/// @dev 检查可以提款一定数量的token
     function testExecuteERC20_With_SomeToken() public {
         wallet = new Wallet("w",signers,signers.length);
         myToken.transfer(address(wallet),10);
@@ -50,11 +52,9 @@ contract ExecutionERC20Test is Test,OffChainSignHelper {
         Wallet.Signature[] memory signatures=new Wallet.Signature[](signers.length);
 
         for(uint256 i=0;i<signatures.length;++i){
-            signatures[i] = executionEtherERC20Sign(privateKeys[i],address(myToken),targetAddress,6);
+            signatures[i] = executionERC20Sign(privateKeys[i],address(myToken),targetAddress,6);
         }
 
-    /// @dev 检查from，to，这两个是indexed的; 不检查amount，因为它不是indexed，但它被附加在了data字段，因此仍然可以做相应的检查
-    /// @dev 并检查该Event的发起者是myToken合约
         vm.expectEmit(true,true,false,true,address(myToken));
         emit Transfer(address(wallet), targetAddress, 6);
         
@@ -66,6 +66,51 @@ contract ExecutionERC20Test is Test,OffChainSignHelper {
         assertEq(wallet.nonce(),2);
     }
 
+
+/// @dev fuzzer，检查可以提取不超过钱包中存放资产数量的token
+/// @dev 由于fuzzer的不确定性，因此参数具体是哪一个将在测试函数内进行检查
+    function testExecuteERC20_With_FuzzerToken(uint256 a,uint256 b) public {
+    /// @dev address(this)拥有的token数量，固定为100000
+        uint256 tokenTotal=100000;
+
+        uint256 walletTotal;
+        uint256 withdrawAmount;
+
+        if (a>b)
+            (walletTotal,withdrawAmount)=(a,b);
+        else
+            (walletTotal,withdrawAmount)=(b,a);
+
+        uint256 realWithDrawAmount = withdrawAmount % tokenTotal;
+        uint256 realWalletTotal = walletTotal % tokenTotal;
+
+        if (realWalletTotal < realWithDrawAmount)
+            (realWalletTotal,realWithDrawAmount)=(realWithDrawAmount,realWalletTotal);
+
+        IERC20 t=IERC20(new MyToken(tokenTotal));
+
+        wallet = new Wallet("w",signers,signers.length);
+
+        t.transfer(address(wallet), realWalletTotal);
+        
+        Wallet.Signature[] memory signatures=new Wallet.Signature[](signers.length);
+
+        for(uint256 i=0; i<signatures.length; ++i) {
+            signatures[i] = executionERC20Sign(privateKeys[i],address(t),targetAddress,realWithDrawAmount);
+        }
+
+        vm.expectEmit(true,true,false,true,address(t));
+        emit Transfer(address(wallet), targetAddress, realWithDrawAmount);
+        
+        wallet.executeERC20(signatures,address(t),address(targetAddress),realWithDrawAmount);
+        
+        assertEq(t.balanceOf(address(this)),tokenTotal-realWalletTotal);
+        
+        assertEq(t.balanceOf(targetAddress),realWithDrawAmount);
+        assertEq(t.balanceOf(address(wallet)),realWalletTotal-realWithDrawAmount);
+        assertEq(wallet.nonce(),2);
+    }
+
     function testExecuteERC20_Cannot_With_WrongTokenAmount() public {
         wallet = new Wallet("w",signers,signers.length);
         myToken.transfer(address(wallet),10);
@@ -73,7 +118,7 @@ contract ExecutionERC20Test is Test,OffChainSignHelper {
         Wallet.Signature[] memory signatures=new Wallet.Signature[](signers.length);
 
         for(uint256 i=0;i<signatures.length;++i){
-            signatures[i] = executionEtherERC20Sign(privateKeys[i],address(myToken),targetAddress,11);
+            signatures[i] = executionERC20Sign(privateKeys[i],address(myToken),targetAddress,11);
         }
 
         
@@ -88,7 +133,7 @@ contract ExecutionERC20Test is Test,OffChainSignHelper {
         Wallet.Signature[] memory signatures=new Wallet.Signature[](signers.length);
 
         for(uint256 i=0;i<signatures.length;++i){
-            signatures[i] = executionEtherERC20Sign(privateKeys[i],address(myToken),targetAddress,6);
+            signatures[i] = executionERC20Sign(privateKeys[i],address(myToken),targetAddress,6);
         }
 
         vm.expectEmit(true,true,false,true,address(myToken));
@@ -98,7 +143,7 @@ contract ExecutionERC20Test is Test,OffChainSignHelper {
 
     /// @dev twice transfer
         for(uint256 i=0;i<signatures.length;++i){
-            signatures[i] = executionEtherERC20Sign(privateKeys[i],address(myToken),targetAddress,2);
+            signatures[i] = executionERC20Sign(privateKeys[i],address(myToken),targetAddress,2);
         }
 
         vm.expectEmit(true,true,false,true,address(myToken));

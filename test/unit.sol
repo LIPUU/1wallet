@@ -4,6 +4,7 @@ import "../src/1wallet.sol";
 import "forge-std/Test.sol";
 
 contract TargetAddress {
+/// @dev 钱包取款时如果使用call调用的方式，该变量强行使fallback执行失败
     bool  force_revert;
     function set_force_revert(bool _force_revert) public {
         force_revert=_force_revert;
@@ -17,11 +18,21 @@ contract TargetAddress {
     }
 }
 
+/// @dev 模拟用户在链下签名的工具合约，编写测试时使用
+/// @dev 正常情况下用户在链下由其他编程语言生成签名
 abstract contract OffChainSignHelper {
-    Wallet internal wallet; // 在该合约的子合约中对wallet进行初始化
+/// @dev 继承OffChainSignHelper的测试合约将在每个测试函数中生成各自的walle合约实例
+    Wallet internal wallet;
     Vm internal hevm=Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
     uint256[] internal privateKeys=[0xBEEF, 0xBEEE, 0x1234, 0x3221, 0x0010, 0x0100, 0x0323];
     address[] internal signers = new address[](privateKeys.length);
+
+/// @dev 用户进行Ether提款操作时的签名工具
+/// @param signer 签名者的私钥
+/// @param target Ether的接收帐户
+/// @param amount 提款Ether的数量
+/// @param data 执行操作时将在target上使用该参数调用call
+/// @return 用私钥和上述三个参数进行签名操作得到的签名数据
     function executionEtherSign (
         uint256 signer,
         address target,
@@ -49,7 +60,8 @@ abstract contract OffChainSignHelper {
         return Wallet.Signature(v,r,s);
     }
 
-    function executionEtherERC20Sign (
+/// @dev 用户进行ERC20代币提款操作时的签名工具
+    function executionERC20Sign (
         uint256 signer,
         address token,
         address target,
@@ -76,6 +88,7 @@ abstract contract OffChainSignHelper {
         return Wallet.Signature(v,r,s);
     }
 
+/// @dev 用户设置新Quorum数量时的签名工具
     function setQuorumSign (
         uint256 signer,
         uint256 newQuorum
@@ -99,6 +112,7 @@ abstract contract OffChainSignHelper {
         return Wallet.Signature(v,r,s);
     }
 
+/// @dev 用户设置信任或不信任某个地址时的签名工具
     function setTrustedAddressSign (
         uint256 signer,
         address addr,

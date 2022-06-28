@@ -28,6 +28,7 @@ contract RouterTest is Test,OffChainSignHelper{
         }
     }
 
+            /// TEST CREATE WALLET ///
     function testCreateNewWallet() public {
         router = new Router(); 
 
@@ -78,8 +79,9 @@ contract RouterTest is Test,OffChainSignHelper{
         vm.expectRevert(abi.encodeWithSignature('InitQuorumIs0()'));
         router.createWallet("A",signers,0);
     }
-
-    /// @dev 测试能够设置新Quorum
+            /// TEST SET NEW QUORUM ///
+    
+    /// @dev 测试参数正确时能够设置新Quorum
     function testCanSetQuorum() public {
         router = new Router();
         wallet = Wallet(payable(router.createWallet("A",signers,signers.length)));
@@ -96,8 +98,8 @@ contract RouterTest is Test,OffChainSignHelper{
         router.setNewQuorum(wallet,signatures,2);
     }
 
-    /// @dev 测试在设置新Quorum时能否处理新Quorum等于0或大于当前signer数量的异常情况
-    function testSetNewQuorum_Cannot_BeZero_or_BiggerThanSigners() public {
+    /// @dev 测试在设置新Quorum时能否处理新Quorum等于0的异常情况
+    function testSetNewQuorum_Cannot_BeZero() public {
         router = new Router();
         wallet = Wallet(payable(router.createWallet("A",signers,signers.length)));
         
@@ -109,13 +111,25 @@ contract RouterTest is Test,OffChainSignHelper{
         }
         vm.expectRevert(abi.encodeWithSignature('InvalidNewQuorum()'));
         router.setNewQuorum(wallet,signatures,0);
+    }
 
+    /// @dev 测试在设置新Quorum时能否处理新Quorum大于当前signer数量的异常情况
+    function testSetNewQuorum_Cannot_BiggerThanSigners() public {
+        router = new Router();
+        wallet = Wallet(payable(router.createWallet("A",signers,signers.length)));
         
-        for(uint256 i=0;i<signatures.length;++i){
-            signatures[i] = setQuorumSign(privateKeys[i],signers.length+1);
+        
+
+        Wallet.Signature[] memory signatures=new Wallet.Signature[](signers.length);
+
+
+        for(uint256 i=0; i<signatures.length; ++i){
+            signatures[i] = setQuorumSign(privateKeys[i],8);
         }
+
+        uint256 newQuorum=router.record(address(wallet))+1;
         vm.expectRevert(abi.encodeWithSignature('InvalidNewQuorum()'));
-        router.setNewQuorum(wallet,signatures,signers.length+1);
+        router.setNewQuorum(wallet,signatures,newQuorum);
     }
 
     /// @dev 测试能够正常设置signer为信任及不信任
@@ -136,7 +150,6 @@ contract RouterTest is Test,OffChainSignHelper{
         router.setTrustedAddress(wallet,signatures,newAddr,true);
     }
 
-
     /// @dev 测试是否能处理trusted signers数量小于quorum的异常情况
     function testSetTrustedAddress_Cannot_SmallerThanQuorum() public {
         address alreadBeSigner=0xF6316684c0846505Be437d97D7ff86cB7d6bd34b;
@@ -153,8 +166,4 @@ contract RouterTest is Test,OffChainSignHelper{
         vm.expectRevert(abi.encodeWithSignature('InvalidSetTrustedAddress()'));
         router.setTrustedAddress(wallet,signatures,alreadBeSigner,false);
     }
-
-    /// @dev 测试一个整体流程。我感觉可以用Echidna测试
-    
-    
 }
