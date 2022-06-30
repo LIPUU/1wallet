@@ -242,6 +242,8 @@ contract Wallet {
             );
     }
     
+    
+
     struct Signature {
         uint8 v;
         bytes32 r;
