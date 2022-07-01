@@ -48,7 +48,7 @@ contract Wallet {
 
     receive() external payable {}
 
-/// @dev 无需做防重入，nonce天然抗防重入
+/// @dev 无需做防重入，nonce天然抗重入
 /// @param _name 钱包名字
 /// @param signers 初始签名者地址
     constructor(
