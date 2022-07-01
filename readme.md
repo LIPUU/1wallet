@@ -39,7 +39,7 @@
 
 ### **1. 签名, 验证, EIP712**
 #### **签名**:
-以太坊通过对原始消息进行签名，可以得到签名后的消息，矿工在执行交易前需要对签名进行验证以确定真伪。
+以太坊通过对原始消息进行签名，矿工在执行交易前需要对签名进行验证以确定真伪。
 
 某个原始交易可能是这样的：
 ```json
@@ -114,6 +114,7 @@ EIP712全称`Ethereum typed structured data hashing and signing`,它描述了如
             );
     }
     ```
+    
 2. PERMIT_TYPEHASH
 3. nonces variable
 
