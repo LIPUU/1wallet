@@ -35,15 +35,62 @@
 
 ---
 
-### 
-
 ### 关键概念理解(新手向)
 
-#### 签名与验证
+**签名验证与EIP712**  
+以太坊通过对原始消息进行签名，可以得到签名后的消息，矿工在执行交易前需要对签名进行验证以确定真伪。
+
+某个原始交易可能是这样的：
+```json
+{
+  "id": 2,
+  "jsonrpc": "2.0",
+  "method": "account_signTransaction",
+  "params": [
+    {
+      "from": "0x1923f626bb8dc025849e00f99c25fe2b2f7fb0db",
+      "gas": "0x55555",
+      "maxFeePerGas": "0x1234",
+      "maxPriorityFeePerGas": "0x1234",
+      "input": "0xa0712d6800000000000000000000000000000000000000000000000000000000000000fa",
+      "nonce": "0x0",
+      "to": "0x07a565b7ed7d7a678680a4c162885bedbb695fe0",
+      "value": "0x1234"
+    }
+  ]
+}
+```
+input不为空，这是个EOA→合约帐户的交易。在单纯转账的情况下input是空的，因为“from”、“to”和“value”字段已经确定了这笔交易的发起方、接收方、金额大小。  
+明确几个概念，数字签名算法DSA（ Digital Signature Algorithm ）, 椭圆曲线算法ECC，而ECDSA是ECC与DSA的结合，被称为椭圆曲线数字签名算法。整个签名过程与DSA类似，所不一样的是签名中采取的算法为ECC。所以被称为ECDSA。
+<div style="text-align: center">
+<img src="./imgs/secp256k1.png"/>
+</div>  
+以太坊使用的secp256k1是指ECDSA(椭圆曲线数字签名算法)曲线的参数。ECDSA 执行签名操作之后得到的签名由两个数字（整数）组成：r 和 s。以太坊还引入了额外的参数v(恢复标识符),则最终签名可以表示成 {r, s, v}。
+
+在创建签名时，要先准备好一条待签署的原始消息(交易)，和用来签署该消息的私钥(d)。
+
+**这意味着只有EOA有能力进行签名，因为合约帐户没有私钥。**
+
+简化的签名步骤即使用 私钥+ECDSA算法对原始消息的哈希进行密码学运算最终得到r，s，v。在solidity层面，这三个签名数据的类型是uint256,uint256,uint8.  
+也就是说{r, s, v} 签名可以组成一个长达 65 字节的序列：r 有 32 个字节，s 有 32 个字节，v 有一个字节。
+
+>在以太坊上，通常使用 `Keccak256("\x19Ethereum Signed Message:\n32" + Keccak256(message))`来计算哈希值。这样，在计算过程中由于引入了明确的和以太坊相关的字符，正常情况下可以确保该签名不能在以太坊之外使用。  
+>其实原始的表达形式是 `Keccak256("\x19Ethereum Signed Message:\n" +length(message) + message)` ,但往往实际用在签名过程中的message都是被Hash过的，长度为固定的32字节，因此就变成了：`Keccak256("\x19Ethereum Signed Message:\n32" + Keccak256(message))` 
+
+如果我们将该签名编码成一个十六进制的字符串，我们最后会得到一个 130 个字符长的字符串( 65bytes=130个hex字符)。大多数钱包和界面都会使用这个字符串。一个完整的签名示例如下图所示：
+```json
+{
+	"address": "0x76e01859d6cf4a8637350bdb81e3cef71e29b7c2",
+	"msg": "原始交易消息",
+	"sig": "0x21fbf0696d5e0aa2ef41a2b4ffb623bcaf070461d61cf7251c74161f82fec3a4370854bc0a34b3ab487c1bc021cd318c734c51ae29374f2beb0e6f2dd49b4bf41c",
+	"version": "2"
+}
+```
+
+**ERC2612**
+
+**多签钱包**
+
+**ERC165与ERC721**
 
 
-#### 多签钱包
-
-#### ERC165与ERC721
-
-#### ERC721与ERC2612
