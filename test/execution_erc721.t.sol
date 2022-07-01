@@ -38,12 +38,6 @@ contract ExecutionERC721Test is Test,OffChainSignHelper {
         for (uint256 i=0; i<privateKeys.length; ++i) {
             signers[i] = vm.addr(privateKeys[i]);
         }
-        /// ? 需要这样给address(this)设置ether吗
-        /// address(this)是否有ether
-        vm.deal(address(this),10 ether);
-        
-        /// 需要以这种方式给gas费吗？？？
-        vm.deal(nftOwner,10 ether);
     }
 
     /// @notice 检查可以将NFT从钱包转至toEOAaddress
