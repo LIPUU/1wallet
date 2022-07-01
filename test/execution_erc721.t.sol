@@ -5,7 +5,6 @@ import "../src/1wallet.sol";
 import "forge-std/console.sol";
 import "./unit.sol";
 import "../src/Mock/MockERC721.sol";
-import "openzeppelin-contracts/contracts/utils/introspection/ERC165.sol";
 
 /// @notice a NFT manager
 contract CanReceiveNTF {
