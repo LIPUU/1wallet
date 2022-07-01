@@ -63,9 +63,6 @@
 ```
 input不为空，这是个EOA→合约帐户的交易。在单纯转账的情况下input是空的，因为“from”、“to”和“value”字段已经确定了这笔交易的发起方、接收方、金额大小。  
 明确几个概念，数字签名算法DSA（ Digital Signature Algorithm ）, 椭圆曲线算法ECC，而ECDSA是ECC与DSA的结合，被称为椭圆曲线数字签名算法。整个签名过程与DSA类似，所不一样的是签名中采取的算法为ECC。所以被称为ECDSA。
-<div style="text-align: center">
-<img src="./imgs/secp256k1.png"/>
-</div>  
 以太坊使用的secp256k1是指ECDSA(椭圆曲线数字签名算法)曲线的参数。ECDSA 执行签名操作之后得到的签名由两个数字（整数）组成：r 和 s。以太坊还引入了额外的参数v(恢复标识符),则最终签名可以表示成 {r, s, v}。
 
 在创建签名时，要先准备好一条待签署的原始消息，和用来签署该消息的私钥。
