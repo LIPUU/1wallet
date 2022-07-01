@@ -124,9 +124,9 @@ contract Wallet {
 					domainSeparator(),
 					keccak256(
 						abi.encode(
-							EXECUTE_ERC20_HASH,
+                            EXECUTE_ERC20_HASH,
                             token,
-							target,
+                            target,
 							amount,
 							nonce++
 						)
