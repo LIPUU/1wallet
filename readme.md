@@ -76,7 +76,7 @@ input不为空，这是个EOA→合约帐户的交易。在单纯转账的情况
 也就是说{r, s, v} 签名可以组成一个长达 65 字节的序列：r 有 32 个字节，s 有 32 个字节，v 有一个字节。
 
 >在以太坊上，通常使用 `Keccak256("\x19Ethereum Signed Message:\n32" + Keccak256(message))`来计算哈希值。这样，在计算过程中由于引入了明确的和以太坊相关的字符，正常情况下可以确保该签名不能在以太坊之外使用。  
->其实原始的表达形式是 `Keccak256("\x19Ethereum Signed Message:\n" +length(message) + message)` ,但往往实际用在签名过程中的message都是被Hash过的，长度为固定的32字节，因此就变成了：`Keccak256("\x19Ethereum Signed Message:\n32" + Keccak256(message))` 
+>其实原始的表达形式是 `Keccak256("\x19Ethereum Signed Message:\n" +length(message) + message)` ,但被Hash过的message长度为固定的32字节，因此就变成了：`Keccak256("\x19Ethereum Signed Message:\n32" + Keccak256(message))` 
 
 如果我们将该签名编码成一个十六进制的字符串，我们最后会得到一个 130 个字符长的字符串( 65bytes=130个hex字符)。大多数钱包和界面都会使用这个字符串。一个完整的签名示例如下图所示：
 ```json
