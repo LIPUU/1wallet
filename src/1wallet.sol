@@ -2,6 +2,7 @@
 pragma solidity ^0.8.14;
 import "forge-std/console.sol";
 import "openzeppelin-contracts/contracts/token/ERC20/IERC20.sol";
+import "solmate/tokens/ERC721.sol";
 
 /// @dev domin separator能够在全区块链网络中(包括分叉链)唯一标识某个eip712实例
 /// @dev FUNCTIONNAME_HASH能够唯一标识出用户想要执行的函数
@@ -32,11 +33,15 @@ contract Wallet {
     bytes32 public constant EXECUTE_ERC20_HASH=
         keccak256("ExecuteERC20(address token,address target,uint256 amount,uint256 nonce)");
 
+    bytes32 public constant EXECUTE_ERC721_HASH=
+        keccak256("ExecuteERC721(address token,address from,address to,uint256 id,uint256 nonce)");
+
     bytes32 public constant QUORUM_HASH=
         keccak256("SetQuorum(uint256 newQuorum,uint256 nonce)");
     
     bytes32 public constant TRUSTED_ADDRESS_HASH=
         keccak256("setTrustedAddress(address addr,bool tursted,uint256 nonce)");
+
 
     uint256 public quorum;
     mapping(address=>bool) public trusted;
@@ -154,6 +159,39 @@ contract Wallet {
         
     }
 
+    function executeNFT(Signature[] calldata signatures,address nftToken,address from,address to,uint256 id) external {
+        bytes32 digest = keccak256(
+				abi.encodePacked(
+					'\x19\x01',
+					domainSeparator(),
+					keccak256(
+						abi.encode(
+							EXECUTE_ERC721_HASH,
+                            nftToken,
+                            from,
+							to,
+							id,
+							nonce++
+						)
+					)
+				)
+			);
+        
+        address previous;
+        unchecked {
+            for (uint256 i=0; i<quorum; ++i ) {
+                address signer=ecrecover(digest,signatures[i].v, signatures[i].r, signatures[i].s);
+
+                if (!trusted[signer] || previous >= signer)
+                    revert InvaildSignatures();
+                
+                previous = signer;
+            }
+        }
+
+        ERC721(nftToken).safeTransferFrom(from,to,id);
+    }
+
 /// @dev 注意此处并未做任何有效性校验，因此直接和setQuorum交互有风险，用户应该通过路由合约与钱包进行交互
     function setQuorum(Signature[] calldata signatures, uint256 newQuorum) external {
         bytes32 digest = keccak256(
@@ -241,8 +279,16 @@ contract Wallet {
                 )
             );
     }
-    
-    
+
+    /// ERC721TokenReceiver interface log  ///
+    function onERC721Received(
+        address,
+        address,
+        uint256,
+        bytes calldata
+    ) external virtual returns (bytes4) {
+        return 0x150b7a02;
+    }
 
     struct Signature {
         uint8 v;

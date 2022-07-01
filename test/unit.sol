@@ -4,7 +4,7 @@ import "../src/1wallet.sol";
 import "forge-std/Test.sol";
 
 contract TargetAddress {
-/// @dev 钱包取款时如果使用call调用的方式，该变量强行使fallback执行失败
+/// @notice 钱包取款时如果使用call调用的方式，该变量强行使fallback执行失败
     bool  force_revert;
     function set_force_revert(bool _force_revert) public {
         force_revert=_force_revert;
@@ -27,7 +27,7 @@ abstract contract OffChainSignHelper {
     uint256[] internal privateKeys=[0xBEEF, 0xBEEE, 0x1234, 0x3221, 0x0010, 0x0100, 0x0323];
     address[] internal signers = new address[](privateKeys.length);
 
-/// @dev 用户进行Ether提款操作时的签名工具
+/// @notice 用户进行Ether提款操作时的签名工具
 /// @param signer 签名者的私钥
 /// @param target Ether的接收帐户
 /// @param amount 提款Ether的数量
@@ -60,10 +60,10 @@ abstract contract OffChainSignHelper {
         return Wallet.Signature(v,r,s);
     }
 
-/// @dev 用户进行ERC20代币提款操作时的签名工具
+/// @notice 用户进行ERC20代币提款操作时的签名工具
     function executionERC20Sign (
         uint256 signer,
-        address token,
+        address erc20Token,
         address target,
         uint256 amount
         ) public returns(Wallet.Signature memory){
@@ -76,7 +76,7 @@ abstract contract OffChainSignHelper {
 					keccak256(
 						abi.encode(
 							wallet.EXECUTE_ERC20_HASH(),
-                            token,
+                            erc20Token,
 							target,
 							amount,
 							wallet.nonce()
@@ -88,7 +88,37 @@ abstract contract OffChainSignHelper {
         return Wallet.Signature(v,r,s);
     }
 
-/// @dev 用户设置新Quorum数量时的签名工具
+/// @notice 用户转移NFT时的签名工具
+    function ExecutionERC721Sign (
+        uint256 signer,
+        address erc721Token,
+        address from,
+        address to,
+        uint256 nftID 
+    ) public returns(Wallet.Signature memory) {
+        (uint8 v,bytes32 r, bytes32 s) = hevm.sign(
+                signer,
+                keccak256( // 这个是digest
+				abi.encodePacked(
+					'\x19\x01',
+					wallet.domainSeparator(),
+					keccak256(
+						abi.encode(
+							wallet.EXECUTE_ERC721_HASH(),
+                            erc721Token,
+                            from,
+							to,
+							nftID,
+							wallet.nonce()
+						)
+					)
+				)
+			)
+        );
+        return Wallet.Signature(v,r,s);
+    }
+
+/// @notice 用户设置新Quorum数量时的签名工具
     function setQuorumSign (
         uint256 signer,
         uint256 newQuorum
@@ -112,7 +142,7 @@ abstract contract OffChainSignHelper {
         return Wallet.Signature(v,r,s);
     }
 
-/// @dev 用户设置信任或不信任某个地址时的签名工具
+/// @notice 用户设置信任或不信任某个地址时的签名工具
     function setTrustedAddressSign (
         uint256 signer,
         address addr,
