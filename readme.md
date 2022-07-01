@@ -35,9 +35,10 @@
 
 ---
 
-### 关键概念理解(新手向)
+## **关键概念理解(新手向)**
 
-**签名验证与EIP712**  
+### **1. 签名, 验证, EIP712**
+#### **签名**:
 以太坊通过对原始消息进行签名，可以得到签名后的消息，矿工在执行交易前需要对签名进行验证以确定真伪。
 
 某个原始交易可能是这样的：
@@ -86,11 +87,41 @@ input不为空，这是个EOA→合约帐户的交易。在单纯转账的情况
 	"version": "2"
 }
 ```
+#### **验证**:
+正如上述示例所示，用户发起一笔交易，需要给矿工提供：
+1. 原始消息(交易)
+2. 签署该消息的私钥对应的地址
+3. {r, s, v} 签名本身
 
-**ERC2612**
+验证过程其实就是从**签名+原始消息中恢复出一个地址**，该地址如果等于消息中附带的地址，则验证通过。否则验证失败。
+#### **EIP712**:
+EIP712全称`Ethereum typed structured data hashing and signing`,它描述了如何一般性地构建一个函数的签名，该标准使得前端能够对签名有更好的显示，不再只是含混地显示一个16进制的签名(非专业用户很难从头构建得到签名并和前端进行比对以确认他们执行的签名确实是自己期望所期望执行的)，而是更加清晰地向用户展示了它们所签的内容。同时该项技术能够使链下签名更有用，在该多签钱包项目中有体现。  
+**EIP712有几个需要深刻理解的核心点：**
+1. `DOMAIN_SEPARATOR`  
+    `DOMAIN_SEPARATOR`就是一个哈希值，用来独一无二地标识一个合约。为了完成该目的，它的计算过程一定引入了相关的信息。
+    ```solidity
+    function calculateDomainSeparator() view internal returns(bytes32) {
+        return keccak256(
+                abi.encode(
+                    keccak256(
+                        'EIP712Domain(string name,string version,uint256 chainId,address verifyingContract)'
+                    ),
+                    keccak256(bytes(name)),
+                    keccak256(bytes('1')),
+                    block.chainid,
+                    address(this)
+                )
+            );
+    }
+    ```
+2. PERMIT_TYPEHASH
+3. nonces variable
 
-**多签钱包**
 
-**ERC165与ERC721**
+### **2. ERC2612**
+
+### **3. 多签钱包工作原理**
+
+### **4. ERC165与ERC721**
 
 
