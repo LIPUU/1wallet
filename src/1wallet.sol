@@ -79,7 +79,7 @@ contract Wallet {
     /// @dev 由domainSeparator、EXECUTE_ETHER_HASH、nonce共同计算的digest，digest用来参与恢复地址
     /// @dev domainSeparator的计算过程由于有钱包合约的地址及chainid的参与且在chainid变动时会自动重新计算,因此在所有的区块链网络上是唯一的
     /// @dev EXECUTE_ETHER_HASH指明了用户想要调用的函数是executeEther，接下来的四个参数正是传递给executeEther函数的参数
-        bytes32 digest = keccak256( 
+        bytes32 digest = keccak256(
 				abi.encodePacked(
 					'\x19\x01',
 					domainSeparator(),

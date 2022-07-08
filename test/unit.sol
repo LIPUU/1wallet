@@ -24,6 +24,8 @@ abstract contract OffChainSignHelper {
 /// @dev 继承OffChainSignHelper的测试合约将在每个测试函数中生成各自的walle合约实例
     Wallet internal wallet;
     Vm internal hevm=Vm(0x7109709ECfa91a80626fF3989D68f67F5b1DD12D);
+    
+/// @dev 这几个私钥生成的地址是升序的
     uint256[] internal privateKeys=[0xBEEF, 0xBEEE, 0x1234, 0x3221, 0x0010, 0x0100, 0x0323];
     address[] internal signers = new address[](privateKeys.length);
 
@@ -41,7 +43,7 @@ abstract contract OffChainSignHelper {
         ) public returns(Wallet.Signature memory){
             (uint8 v,bytes32 r, bytes32 s) = hevm.sign(
                 signer,
-                keccak256( // 这个是digest
+                keccak256( // 这个是digest. 链上链下计算digest的步骤是完全一样的
 				abi.encodePacked(
 					'\x19\x01',
 					wallet.domainSeparator(),
