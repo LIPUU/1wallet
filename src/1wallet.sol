@@ -72,6 +72,22 @@ contract Wallet {
         }
     }
 
+    function verify(bytes32 digest, Signature[] calldata signatures) internal view {
+        /// @dev 使用digest和签名共同恢复地址
+        /// @dev 当恢复出的签名彼此之间无序或重复(这两项检查也是要求地址升序的原因)，或不在trusted的信任列表里，触发InvaildSignatures错误
+        address previous;
+        unchecked {
+            for (uint256 i=0; i<quorum; ++i ) {
+                address signer = ecrecover(digest,signatures[i].v, signatures[i].r, signatures[i].s);
+
+                if (!trusted[signer] || previous >= signer)
+                    revert InvaildSignatures();
+                
+                previous = signer;
+            }
+        }
+    }
+
 /// @dev 执行取款Ether
 /// @param signatures 签名数组。该签名数组参数中的签名对应的地址必须是升序的
     function executeEther(Signature[] calldata signatures, address target,uint256 amount, bytes calldata data) external {
@@ -95,19 +111,7 @@ contract Wallet {
 				)
 			);
     
-    /// @dev 使用digest和签名共同恢复地址
-    /// @dev 当恢复出的签名彼此之间无序或重复(这两项检查也是要求地址升序的原因)，或不在trusted的信任列表里，触发InvaildSignatures错误
-        address previous;
-        unchecked {
-            for (uint256 i=0; i<quorum; ++i ) {
-                address signer = ecrecover(digest,signatures[i].v, signatures[i].r, signatures[i].s);
-
-                if (!trusted[signer] || previous >= signer)
-                    revert InvaildSignatures();
-                
-                previous = signer;
-            }
-        }
+        verify(digest,signatures);
 
     /// @dev 当data为空且目标地址是合约地址时，receive函数被调用，如果没有receive函数则fallback被调用
     /// @dev 当data不为空且目标地址是合约地址时，将调用fallback函数或使用data解析出的目标函数和参数
@@ -134,17 +138,8 @@ contract Wallet {
 				)
 			);
         
-        address previous;
-        unchecked {
-            for (uint256 i=0; i<quorum; ++i ) {
-                address signer=ecrecover(digest,signatures[i].v, signatures[i].r, signatures[i].s);
+        verify(digest,signatures);
 
-                if (!trusted[signer] || previous >= signer)
-                    revert InvaildSignatures();
-                
-                previous = signer;
-            }
-        }
     /// @dev RC20代币的转账操作. 模仿uniswapv2的_safeTransferFrom实现，能够应对非标准的ERC20实现
         (bool success, bytes memory data) = address(token).call(
             abi.encodeWithSignature(
@@ -177,17 +172,7 @@ contract Wallet {
 				)
 			);
         
-        address previous;
-        unchecked {
-            for (uint256 i=0; i<quorum; ++i ) {
-                address signer=ecrecover(digest,signatures[i].v, signatures[i].r, signatures[i].s);
-
-                if (!trusted[signer] || previous >= signer)
-                    revert InvaildSignatures();
-                
-                previous = signer;
-            }
-        }
+        verify(digest,signatures);
 
         ERC721(nftToken).safeTransferFrom(from,to,id);
     }
@@ -208,17 +193,7 @@ contract Wallet {
 				)
 			);
         
-        address previous;
-        unchecked {
-            for (uint256 i=0; i<quorum; ++i ) {
-                address signer=ecrecover(digest,signatures[i].v, signatures[i].r, signatures[i].s);
-
-                if (!trusted[signer] || previous >= signer)
-                    revert InvaildSignatures();
-                
-                previous = signer;
-            }
-        }
+        verify(digest,signatures);
 
         quorum = newQuorum;
         emit QuorumUpdated(quorum);
@@ -244,17 +219,7 @@ contract Wallet {
 				)
 			);
         
-        address previous;
-        unchecked {
-            for (uint256 i=0; i<quorum; ++i ) {
-                address signer=ecrecover(digest,signatures[i].v, signatures[i].r, signatures[i].s);
-
-                if (!trusted[signer] || previous >= signer)
-                    revert InvaildSignatures();
-                
-                previous = signer;
-            }
-        }
+        verify(digest,signatures);
 
         trusted[addr]=trusted_or_not;
         emit TrustedAddressUpdated(addr,trusted_or_not);
