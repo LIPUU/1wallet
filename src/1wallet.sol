@@ -72,7 +72,8 @@ contract Wallet {
         }
     }
 
-    function verify(bytes32 digest, Signature[] calldata signatures) internal view {
+
+    function verify(Signature[] calldata signatures, bytes32 digest) internal view {
         /// @dev 使用digest和签名共同恢复地址
         /// @dev 当恢复出的签名彼此之间无序或重复(这两项检查也是要求地址升序的原因)，或不在trusted的信任列表里，触发InvaildSignatures错误
         address previous;
@@ -86,7 +87,9 @@ contract Wallet {
                 previous = signer;
             }
         }
-    }
+    } 
+
+
 
 /// @dev 执行取款Ether
 /// @param signatures 签名数组。该签名数组参数中的签名对应的地址必须是升序的
@@ -110,8 +113,8 @@ contract Wallet {
 					)
 				)
 			);
-    
-        verify(digest,signatures);
+
+        verify(signatures,digest);
 
     /// @dev 当data为空且目标地址是合约地址时，receive函数被调用，如果没有receive函数则fallback被调用
     /// @dev 当data不为空且目标地址是合约地址时，将调用fallback函数或使用data解析出的目标函数和参数
@@ -138,7 +141,8 @@ contract Wallet {
 				)
 			);
         
-        verify(digest,signatures);
+        verify(signatures,digest);
+
 
     /// @dev RC20代币的转账操作. 模仿uniswapv2的_safeTransferFrom实现，能够应对非标准的ERC20实现
         (bool success, bytes memory data) = address(token).call(
@@ -172,7 +176,8 @@ contract Wallet {
 				)
 			);
         
-        verify(digest,signatures);
+        verify(signatures,digest);
+
 
         ERC721(nftToken).safeTransferFrom(from,to,id);
     }
@@ -193,7 +198,9 @@ contract Wallet {
 				)
 			);
         
-        verify(digest,signatures);
+
+        verify(signatures,digest);
+
 
         quorum = newQuorum;
         emit QuorumUpdated(quorum);
@@ -218,8 +225,8 @@ contract Wallet {
 					)
 				)
 			);
-        
-        verify(digest,signatures);
+        verify(signatures,digest);
+
 
         trusted[addr]=trusted_or_not;
         emit TrustedAddressUpdated(addr,trusted_or_not);
