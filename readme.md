@@ -132,7 +132,7 @@ ERC2612描述了ERC712的一个实际用例，使得ERC20中的permit函数能�
 多签钱包有一些民主的意味，只有在不少于设定值的用户数同意时才能够对钱包里的资金进行操作，在某些场景下(比如保管团队资金，家族资金)显然比所谓的单签钱包要靠谱。  
 从技术流程上讲，每个多签钱包在创建的时候都有一个初始的信任地址列表和多签人数值，比如某钱包在创建时，信任地址列表中有5个地址，多签人数值设定为3,之后对该钱包的任何操作都至少要经过3个信任地址的签名才能进行。类似地，多签地址列表和多签人数都能够通过此步骤进行更新。
 ### **4. ERC165与ERC721**
-本节已pr到[wtf系列教程](https://github.com/AmazingAng/WTFSolidity/tree/main/34_ERC721):)
+本节已pr到[wtf系列教程](https://github.com/AmazingAng/WTFSolidity/tree/main/34_ERC721):)  
 为了使得多签钱包能够接收NFT,必须钱包必须正确实现ERC721TokenReceiver接口：
 ```solidity
 interface ERC721TokenReceiver {
