@@ -99,20 +99,20 @@ contract Wallet {
     /// @dev domainSeparator的计算过程由于有钱包合约的地址及chainid的参与且在chainid变动时会自动重新计算,因此在所有的区块链网络上是唯一的
     /// @dev EXECUTE_ETHER_HASH指明了用户想要调用的函数是executeEther，接下来的四个参数正是传递给executeEther函数的参数
         bytes32 digest = keccak256(
-				abi.encodePacked(
-					'\x19\x01',
-					domainSeparator(),
-					keccak256(
-						abi.encode(
-							EXECUTE_ETHER_HASH,
-							target,
-							amount,
-							data,
-							nonce++
-						)
-					)
-				)
-			);
+                abi.encodePacked(
+                    '\x19\x01',
+                    domainSeparator(),
+                    keccak256(
+                        abi.encode(
+                            EXECUTE_ETHER_HASH,
+                            target,
+                            amount,
+                            data,
+                            nonce++
+                            )
+                    )
+                )
+            );
 
         verify(signatures,digest);
 
@@ -126,20 +126,20 @@ contract Wallet {
 
     function executeERC20(Signature[] calldata signatures,address token,address target,uint256 amount) external {
         bytes32 digest = keccak256(
-				abi.encodePacked(
-					'\x19\x01',
-					domainSeparator(),
-					keccak256(
-						abi.encode(
+                abi.encodePacked(
+                    '\x19\x01',
+                    domainSeparator(),
+                    keccak256(
+                        abi.encode(
                             EXECUTE_ERC20_HASH,
                             token,
                             target,
-							amount,
-							nonce++
-						)
-					)
-				)
-			);
+                            amount,
+                            nonce++
+                        )
+                    )
+                )
+            );
         
         verify(signatures,digest);
 
@@ -160,21 +160,21 @@ contract Wallet {
 
     function executeNFT(Signature[] calldata signatures,address nftToken,address from,address to,uint256 id) external {
         bytes32 digest = keccak256(
-				abi.encodePacked(
-					'\x19\x01',
-					domainSeparator(),
-					keccak256(
-						abi.encode(
-							EXECUTE_ERC721_HASH,
+                abi.encodePacked(
+                    '\x19\x01',
+                    domainSeparator(),
+                    keccak256(
+                        abi.encode(
+                            EXECUTE_ERC721_HASH,
                             nftToken,
                             from,
-							to,
-							id,
-							nonce++
-						)
-					)
-				)
-			);
+                            to,
+                            id,
+                            nonce++
+                        )
+                    )
+                )
+            );
         
         verify(signatures,digest);
 
@@ -185,18 +185,18 @@ contract Wallet {
 /// @dev 注意此处并未做任何有效性校验，因此直接和setQuorum交互有风险，用户应该通过路由合约与钱包进行交互
     function setQuorum(Signature[] calldata signatures, uint256 newQuorum) external {
         bytes32 digest = keccak256(
-				abi.encodePacked(
-					'\x19\x01',
-					domainSeparator(),
-					keccak256(
-						abi.encode(
-							QUORUM_HASH,
+                abi.encodePacked(
+                    '\x19\x01',
+                    domainSeparator(),
+                    keccak256(
+                        abi.encode(
+                            QUORUM_HASH,
                             newQuorum,
-							nonce++
-						)
-					)
-				)
-			);
+                            nonce++
+                        )
+                    )
+                )
+            );
         
 
         verify(signatures,digest);
@@ -212,19 +212,19 @@ contract Wallet {
             revert ExecutionFailed();
 
         bytes32 digest = keccak256(
-				abi.encodePacked(
-					'\x19\x01',
-					domainSeparator(),
-					keccak256(
-						abi.encode(
-							TRUSTED_ADDRESS_HASH,
+                abi.encodePacked(
+                    '\x19\x01',
+                    domainSeparator(),
+                    keccak256(
+                        abi.encode(
+                            TRUSTED_ADDRESS_HASH,
                             addr,
                             trusted_or_not,
-							nonce++
-						)
-					)
-				)
-			);
+                            nonce++
+                        )
+                    )
+                )
+            );
         verify(signatures,digest);
 
 
