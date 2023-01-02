@@ -78,7 +78,7 @@ abstract contract OffChainSignHelper {
 					keccak256(
 						abi.encode(
 							wallet.EXECUTE_ERC20_HASH(),
-                            erc20Token,
+                            				erc20Token,
 							target,
 							amount,
 							wallet.nonce()
@@ -107,8 +107,8 @@ abstract contract OffChainSignHelper {
 					keccak256(
 						abi.encode(
 							wallet.EXECUTE_ERC721_HASH(),
-                            erc721Token,
-                            from,
+                            				erc721Token,
+                            				from,
 							to,
 							nftID,
 							wallet.nonce()
@@ -159,8 +159,8 @@ abstract contract OffChainSignHelper {
 					keccak256(
 						abi.encode(
 							wallet.TRUSTED_ADDRESS_HASH(),
-                            addr,
-                            trusted_or_not,
+                            				addr,
+                            				trusted_or_not,
 							wallet.nonce()
 						)
 					)
